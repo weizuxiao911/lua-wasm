@@ -1,0 +1,18 @@
+{
+  "name": "lua-wasm",
+  "version": "0.0.1",
+  "description": "Compile Lua 5.4.0 to WebAssembly, enabling the execution of Lua scripts directly within the browser environment.",
+  "keywords": ["lua", "wasm", "WebAssembly", "lua-wasm"],
+  "main": "lua.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node lua.js "
+  },
+  "author": "weizuxiao",
+  "license": "MIT",
+  "dependencies": {
+    "xterm": "^5.3.0",
+    "xterm-addon-fit": "^0.8.0",
+    "xterm-addon-web-links": "^0.9.0"
+  }
+}

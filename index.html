@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="node_modules/xterm/css/xterm.css" />
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #terminal {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="terminal"></div>
+    <script src="lua.js"></script>
+    <script src="node_modules/xterm/lib/xterm.js"></script>
+    <script src="node_modules/xterm-addon-web-links/lib/xterm-addon-web-links.js"></script>
+    <script>
+        const lua = Module.cwrap('lua', 'number', ['string'])
+
+        const term = new Terminal({
+            fontFamily: 'Monaco, Menlo, Consolas, "Courier New", monospace',
+            fontSize: 12,
+            theme: {
+                background: '#000'
+            },
+            cursorBlink: true
+        })
+        term.open(document.getElementById('terminal'))
+
+        term.onData((data) => {
+            // jsexec(data)
+        })
+
+    </script>
+</body>
+
+</html>
