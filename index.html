@@ -11,7 +11,7 @@
             padding: 0;
         }
 
-        #terminal {
+        #terminal-container {
             width: 100vw;
             height: 100vh;
         }
@@ -19,26 +19,97 @@
 </head>
 
 <body>
-    <div id="terminal"></div>
-    <script src="lua.js"></script>
+    <div id="terminal-container"></div>
+    <script src="vm.js"></script>
     <script src="node_modules/xterm/lib/xterm.js"></script>
     <script src="node_modules/xterm-addon-web-links/lib/xterm-addon-web-links.js"></script>
     <script>
-        const lua = Module.cwrap('lua', 'number', ['string'])
-
-        const term = new Terminal({
-            fontFamily: 'Monaco, Menlo, Consolas, "Courier New", monospace',
-            fontSize: 12,
+        // 初始化终端
+        const terminal = new Terminal({
+            rows: 24,
+            cols: 80,
+            convertEol: true,
             theme: {
-                background: '#000'
+                foreground: '#cccccc',
+                background: '#000000',
+                cursor: '#fff000'
             },
-            cursorBlink: true
-        })
-        term.open(document.getElementById('terminal'))
+            cursorBlink: true,
+            fontSize: 14
+        });
 
-        term.onData((data) => {
-            // jsexec(data)
-        })
+        // 将终端附加到 DOM 元素
+        terminal.open(document.getElementById('terminal-container'));
+
+        // 设置提示符
+        let prompt = '$ ';
+        terminal.write(`\u001b[32m${prompt}\u001b[37m`);
+
+        // 处理用户输入
+        let curr = []
+        let history = []
+        terminal.onData((data) => {
+            const input = data.split('').map(c => c.charCodeAt(0))
+            try {
+                if ('9' === input.join()) {
+                    for (let i = 0; i < 4; i++) {
+                        curr.push(32)
+                        terminal.write(' ')
+                    }
+                    return
+                }
+                if ('127' === input.join()) {
+                    if (!curr.length) { return }
+                    terminal.write('\b')
+                    terminal.write(' \b')
+                    curr.pop()
+                    return
+                }
+                if ('13' === input.join()) {
+                    const last1 = curr?.[curr.length - 1]
+                    const last2 = curr?.[curr.length - 2]
+                    if ('3292' !== `${last2}${last1}`) {
+                        const exec = () => {
+                            return false
+                        }
+                        if (exec()) {
+                            history.push(curr)
+                            curr = []
+                        }
+                        return 
+                    }
+                    curr.push(13)
+                    terminal.write('\r')
+                    curr.push(10)
+                    terminal.write('\n')
+                    return
+                }
+                curr.push(...input)
+                terminal.write(data)
+            } finally {
+                console.log(`input = ${input}, curr = ${curr}, history = ${history}`)
+            }
+        });
+
+        // 输出到终端
+        const printCallback = (ptr, length) => {
+            const buffer = new Uint8Array(Module.HEAPU8.buffer, ptr, length);
+            const decoder = new TextDecoder();
+            const output = decoder.decode(buffer);
+            terminal.write(output);
+        };
+
+        // 处理输入并在 WebAssembly 中执行命令
+        function processInput(inputBytes) {
+            Module._process_input(inputBytes, inputBytes.length, printCallback);
+        }
+
+
+        const main = Module.cwrap('main', 'number', ['string'])
+        const lua = Module.cwrap('lua', 'number', ['string'])
+        const ls = Module.cwrap('ls', 'number', ['string'])
+
+
 
     </script>
 </body>

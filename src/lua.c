@@ -5,9 +5,6 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-// 函数声明
-int load_and_run_lua_script(lua_State *L, const char *script);
-
 void lua(const char *script)
 {
     // 初始化 Lua 状态机
@@ -48,17 +45,4 @@ int load_and_run_lua_script(lua_State *L, const char *script)
         return 1;                                     // 失败
     }
     return 0; // 成功
-}
-
-int main()
-{
-    MAIN_THREAD_EM_ASM(
-        FS.writeFile('file', 'foobar');
-        console.log(FS.stat('file'));
-        console.log(FS.readFile('file', {encoding : 'utf8'}));
-    );
-
-    lua("a=1;b=2;print(a+b)");
-
-    return 0;
 }
